@@ -1,0 +1,20 @@
+{
+  "name": "voiceTrainer",
+  "version": "0.0.0",
+  "homepage": "https://github.com/Dmeowmixer/voiceTrainer",
+  "authors": [
+    "dmeowmixer <dmeowmixer@hotmail.com>"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "justgage": "*",
+    "raphael": "~2.1.4"
+  }
+}
