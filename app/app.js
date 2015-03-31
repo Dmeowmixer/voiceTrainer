@@ -1,4 +1,98 @@
 window.AudioContext = window.AudioContext || window.webkitAudioContext;
+// will include other octives in v2
+var noteData = {
+  "C":523.25,
+  "C#":554.37,
+  "D":587.33,
+  "D#":622.26,
+  "E":659.26,
+  "F":698.46,
+  "F#":739.99,
+  "G":783.99,
+  "G#":830.61,
+  "A":880,
+  "A#":932.33,
+  "B":987.77 
+};  
+
+var width = 960,
+    height = 500,
+    τ = 2 * Math.PI; 
+
+// An arc function with all values bound except the endAngle. So, to compute an
+// SVG path string for a given angle, we pass an object with an endAngle
+// property to the `arc` function, and it will return the corresponding string.
+var arc = d3.svg.arc()
+    .innerRadius(180) 
+    .outerRadius(240)
+    .startAngle(0);
+
+// Create the SVG container, and apply a transform such that the origin is the
+// center of the canvas. This way, we don't need to position arcs individually.
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height)
+    .append("g")
+    .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+
+
+var background = svg.append("path")
+    .datum({endAngle: 100})
+    .style("fill", "#ddd")
+    .attr("d", arc);
+
+// Add the foreground arc in orange, currently showing 12.7%.
+var foreground = svg.append("path")
+    .datum({endAngle: .1 * τ})
+    .style("fill", "orange")
+    .attr("d", arc);
+
+var gaugeGroup = svg.append("g")
+    .datum({endAngle: .1 * τ})
+    .attr("class", "hour hands")
+    .attr("transform", "translate( 0 , 0 )");
+
+var hour = gaugeGroup.append("path")
+    .attr("class", "tri")
+    .attr("d", "M" + (600/2 + 12) + " " + (240 + 10) + " L" + 600/2 + " 0 L" + (600/2 - 3) + " " + (240 + 10) + " C" + (600/2 - 3) + " " + (240 + 20) + " " + (600/2 + 3) + " " + (240 + 20) + " " + (600/2 + 12) + " " + (240 + 10) + " Z")
+    // .attr("transform", "rotate(-60, " + -70 + "," + (389) + ")");
+    .attr("transform", "translate(-300,-250) rotate(0,0,0)");
+
+var minute = gaugeGroup.append("path")
+    .attr("class", "tri")
+    .attr("d", "M" + (300/2 + 3) + " " + (170 + 10) + " L" + 300/2 + " 0 L" + (300/2 - 3) + " " + (170 + 10) + " C" + (300/2 - 3) + " " + (170 + 20) + " " + (300/2 + 3) + " " + (170 + 20) + " " + (300/2 + 3) + " " + (170 + 10) + " Z")
+    // .attr("transform", "translate(0, 0) rotate(-60, " + -85 + "," + (222) + ")")
+    .attr("transform", "translate(-150,-188) rotate(0,0,0)");
+
+// Add the background arc, from 0 to 100% (τ).
+
+function setValues(note, detune){
+
+  foreground.transition()
+    // .domain(500,1000)
+    // .range(0,τ)
+    .duration(190)
+    .call(arcTween, note / 10);
+  gaugeGroup
+    // .attr("transform", "rotate(-60, -85, 222)")
+    .transition()
+    .duration(200)
+    // .attrTween("transform", tween)
+    .attr("transform", "rotate("+note *τ +",0,0)");
+  minute
+    .transition()
+    .duration(150)
+    .attr("transform", function(d){
+      return "rotate(" + detune * τ +")";
+    });
+    // function tween(d, i) {
+    //   // return .transform("rotate(-60, -85, 222)")
+    //   return d3.transform
+    // }
+    // "rotate("+detune * τ +",200,6)");
+}
+
 
 var audioContext = null;
 var isPlaying = false;
@@ -44,7 +138,7 @@ window.onload = function() {
   detuneAmount = document.getElementById( "detune_amt" );
 
   detectorElem.ondragenter = function () { 
-    this.classList.add("droptarget"); 
+    this.classList.add("droptarget"); 0
     return false; };
   detectorElem.ondragleave = function () { this.classList.remove("droptarget"); return false; };
   detectorElem.ondrop = function (e) {
@@ -121,7 +215,6 @@ function toggleOscillator() {
     isPlaying = true;
     isLiveInput = false;
     updatePitch();
-
     return "stop";
 }
 
@@ -184,6 +277,7 @@ var tracks = null;
 var buflen = 1024;
 var buf = new Float32Array( buflen );
 
+// C:523.25,  C#:554.37, D:587.33, D#:622.26, E:659.26, F:698.46, F#:739.99, G:783.99, G#:830.61, A:880, A#:932.33, B:987.77 
 var noteStrings = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 
 function noteFromPitch( frequency ) {
@@ -289,54 +383,14 @@ function updatePitch( time ) {
       detuneAmount.innerHTML = Math.abs( detune );
     }
     console.log(note,detune);
+    setValues(note%12,detune);
   }
-
   if (!window.requestAnimationFrame)
     window.requestAnimationFrame = window.webkitRequestAnimationFrame;
   rafID = window.requestAnimationFrame( updatePitch );
 }
-
-// start of d3
-var width = 960,
-    height = 500,
-    τ = 2 * Math.PI; // http://tauday.com/tau-manifesto
-
-// An arc function with all values bound except the endAngle. So, to compute an
-// SVG path string for a given angle, we pass an object with an endAngle
-// property to the `arc` function, and it will return the corresponding string.
-var arc = d3.svg.arc()
-    .innerRadius(180)
-    .outerRadius(240)
-    .startAngle(0);
-
-// Create the SVG container, and apply a transform such that the origin is the
-// center of the canvas. This way, we don't need to position arcs individually.
-var svg = d3.select("body").append("svg")
-    .attr("width", width)
-    .attr("height", height)
-  .append("g")
-    .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")")
-
-// Add the background arc, from 0 to 100% (τ).
-var background = svg.append("path")
-    .datum({endAngle: τ})
-    .style("fill", "#ddd")
-    .attr("d", arc);
-
-// Add the foreground arc in orange, currently showing 12.7%.
-var foreground = svg.append("path")
-    .datum({endAngle: .1 * τ})
-    .style("fill", "orange")
-    .attr("d", arc);
-
-// Every so often, start a transition to a new random angle. Use transition.call
-// (identical to selection.call) so that we can encapsulate the logic for
-// tweening the arc in a separate function below.
-setInterval(function() {
-  foreground.transition()
-      .duration(750)
-      .call(arcTween, Math.random() * τ);
-}, 1500);
+// need to do note%12, match to string in noteStrings array.
+// two hands one to target note 2nd to target flat/sharp
 
 // Creates a tween on the specified transition's "d" attribute, transitioning
 // any selected arcs from their current angle to the specified new angle.
@@ -357,7 +411,6 @@ function arcTween(transition, newAngle) {
     // ending angle. When t = 0, it returns d.endAngle; when t = 1, it returns
     // newAngle; and for 0 < t < 1 it returns an angle in-between.
     var interpolate = d3.interpolate(d.endAngle, newAngle);
-
     // The return value of the attrTween is also a function: the function that
     // we want to run for each tick of the transition. Because we used
     // attrTween("d"), the return value of this last function will be set to the
@@ -387,22 +440,3 @@ function arcTween(transition, newAngle) {
     };
   });
 }
-
-// d3.select("body")
-//   .append("canvas")
-//   .attr('width', 400)
-//   .attr('height', 350);
-
-// var data = sampleRate;
-
-// var scale = d3.scale.linear()
-//   .range([0,100])
-//   .domain([1,23]);
-
-// data.forEach(function(d, i){
-//   context.beginPath();
-//   context.rect(scale(d), 150,10,10);
-//   context.fillStyle = "red";
-//   context.fill();
-//   context.closePath();
-// });
