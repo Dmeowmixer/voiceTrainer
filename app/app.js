@@ -35,6 +35,11 @@ var svg = d3.select("body").append("svg")
     .append("g")
     .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
 
+var gvs = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height)
+    .append("g")
+    .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
 
 
 var background = svg.append("path")
@@ -53,16 +58,20 @@ var gaugeGroup = svg.append("g")
     .attr("class", "hour hands")
     .attr("transform", "translate( 0 , 0 )");
 
+var groupGauge = gaugeGroup.append("g")
+    .datum({endAngle: .1 * τ})
+    .attr("class", "hour hands")
+    .attr("transform", "translate( 0 , 0 )");
+
 var hour = gaugeGroup.append("path")
     .attr("class", "tri")
     .attr("d", "M" + (600/2 + 12) + " " + (240 + 10) + " L" + 600/2 + " 0 L" + (600/2 - 3) + " " + (240 + 10) + " C" + (600/2 - 3) + " " + (240 + 20) + " " + (600/2 + 3) + " " + (240 + 20) + " " + (600/2 + 12) + " " + (240 + 10) + " Z")
     // .attr("transform", "rotate(-60, " + -70 + "," + (389) + ")");
     .attr("transform", "translate(-300,-250) rotate(0,0,0)");
 
-var minute = gaugeGroup.append("path")
+var minute = groupGauge.append("path")
     .attr("class", "tri")
     .attr("d", "M" + (300/2 + 3) + " " + (170 + 10) + " L" + 300/2 + " 0 L" + (300/2 - 3) + " " + (170 + 10) + " C" + (300/2 - 3) + " " + (170 + 20) + " " + (300/2 + 3) + " " + (170 + 20) + " " + (300/2 + 3) + " " + (170 + 10) + " Z")
-    // .attr("transform", "translate(0, 0) rotate(-60, " + -85 + "," + (222) + ")")
     .attr("transform", "translate(-150,-188) rotate(0,0,0)");
 
 // Add the background arc, from 0 to 100% (τ).
@@ -79,13 +88,12 @@ function setValues(note, detune){
     .transition()
     .duration(200)
     // .attrTween("transform", tween)
-    .attr("transform", "rotate("+note *τ +",0,0)");
-  minute
+    .attr("transform", "rotate("+ note *τ +",0,0)");
+  groupGauge
     .transition()
     .duration(150)
-    .attr("transform", function(d){
-      return "rotate(" + detune * τ +")";
-    });
+    .attr("transform", "rotate(" + ( (detune / 4 * τ) + ( +180 )  ) + ",0,0)");
+    
     // function tween(d, i) {
     //   // return .transform("rotate(-60, -85, 222)")
     //   return d3.transform
