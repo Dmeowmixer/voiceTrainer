@@ -1,3 +1,11 @@
 .tri {
   z-index: 10;
 }
+
+.noteTick{
+  stroke-width: 3;
+  stroke:#000;
+}
+
+
+

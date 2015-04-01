@@ -1,6 +1,8 @@
 window.AudioContext = window.AudioContext || window.webkitAudioContext;
 // will include other octives in v2
 var noteData = {
+
+  "start": 500,
   "C":523.25,
   "C#":554.37,
   "D":587.33,
@@ -10,10 +12,15 @@ var noteData = {
   "F#":739.99,
   "G":783.99,
   "G#":830.61,
-  "A":880,
+  "A":880,  
   "A#":932.33,
-  "B":987.77 
+  "B":987.77,
+  "finish":1000
+
+
 };  
+
+var noteArray = [ 523.25, 554.37, 587.33, 622.26, 659.26, 698.46, 739.99, 783.99, 830.61, 880, 932.33, 987.77 ];
 
 var width = 960,
     height = 500,
@@ -22,8 +29,9 @@ var width = 960,
 // An arc function with all values bound except the endAngle. So, to compute an
 // SVG path string for a given angle, we pass an object with an endAngle
 // property to the `arc` function, and it will return the corresponding string.
+
 var arc = d3.svg.arc()
-    .innerRadius(180) 
+    .innerRadius(190) 
     .outerRadius(240)
     .startAngle(0);
 
@@ -40,7 +48,6 @@ var gvs = d3.select("body").append("svg")
     .attr("height", height)
     .append("g")
     .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
-
 
 var background = svg.append("path")
     .datum({endAngle: 100})
@@ -63,10 +70,25 @@ var groupGauge = gaugeGroup.append("g")
     .attr("class", "hour hands")
     .attr("transform", "translate( 0 , 0 )");
 
+var frequencyScale = d3.scale.linear()
+    .domain([ noteData.C,noteData.B ])
+    .range([0,321]);
+
+  svg.selectAll('noteTick')
+    .data(noteArray).enter()
+      .append('line')
+      .attr('class', 'noteTick')
+      .attr('x1',0)
+      .attr('x2',0)
+      .attr('y1',190)
+      .attr('y2', 240)
+      .attr('transform',function(d){
+        return 'rotate(' + frequencyScale(d) + ')';
+      });
+
 var hour = gaugeGroup.append("path")
     .attr("class", "tri")
     .attr("d", "M" + (600/2 + 12) + " " + (240 + 10) + " L" + 600/2 + " 0 L" + (600/2 - 3) + " " + (240 + 10) + " C" + (600/2 - 3) + " " + (240 + 20) + " " + (600/2 + 3) + " " + (240 + 20) + " " + (600/2 + 12) + " " + (240 + 10) + " Z")
-    // .attr("transform", "rotate(-60, " + -70 + "," + (389) + ")");
     .attr("transform", "translate(-300,-250) rotate(0,0,0)");
 
 var minute = groupGauge.append("path")
@@ -76,29 +98,21 @@ var minute = groupGauge.append("path")
 
 // Add the background arc, from 0 to 100% (τ).
 
-function setValues(note, detune){
-
+function setValues(frequency, note, detune){
   foreground.transition()
-    // .domain(500,1000)
-    // .range(0,τ)
     .duration(190)
-    .call(arcTween, note / 10);
+    .call(arcTween, note );
+
   gaugeGroup
-    // .attr("transform", "rotate(-60, -85, 222)")
     .transition()
     .duration(200)
-    // .attrTween("transform", tween)
-    .attr("transform", "rotate("+ note *τ +",0,0)");
+    .attr("transform", "rotate(" + ( frequency ) + ",0,0)");
+  
   groupGauge
     .transition()
     .duration(150)
-    .attr("transform", "rotate(" + ( (detune / 4 * τ) + ( +180 )  ) + ",0,0)");
-    
-    // function tween(d, i) {
-    //   // return .transform("rotate(-60, -85, 222)")
-    //   return d3.transform
-    // }
-    // "rotate("+detune * τ +",200,6)");
+    .attr("transform", "rotate(" + ( (detune / 8 * τ) + ( 0 )  ) + ",0,0)");
+
 }
 
 
@@ -130,7 +144,6 @@ window.onload = function() {
         theBuffer = buffer;
     } );
   };
-  // request.send();
 
   detectorElem = document.getElementById( "detector" );
   canvasElem = document.getElementById( "output" );
@@ -297,6 +310,9 @@ function frequencyFromNoteNumber( note ) {
   return 440 * Math.pow(2,(note-69)/12);
 }
 
+
+
+
 function centsOffFromPitch( frequency, note ) {
   // target val frequencyFromNoteNumber (this is the perfect pitch AC) frequency is the users actualy frequency value between is cents off from pitch
   return Math.floor( 1200 * Math.log( frequency / frequencyFromNoteNumber( note ))/Math.log(2) );
@@ -390,8 +406,8 @@ function updatePitch( time ) {
         detuneElem.className = "sharp";
       detuneAmount.innerHTML = Math.abs( detune );
     }
-    console.log(note,detune);
-    setValues(note%12,detune);
+    // console.log(note,detune);
+    setValues(pitch, note%12,detune);
   }
   if (!window.requestAnimationFrame)
     window.requestAnimationFrame = window.webkitRequestAnimationFrame;
