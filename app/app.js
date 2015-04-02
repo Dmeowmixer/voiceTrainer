@@ -1,29 +1,24 @@
 window.AudioContext = window.AudioContext || window.webkitAudioContext;
 // will include other octives in v2
-var noteData = {
+var noteData = [
 
-  "start": 500,
-  "C":523.25,
-  "C#":554.37,
-  "D":587.33,
-  "D#":622.26,
-  "E":659.26,
-  "F":698.46,
-  "F#":739.99,
-  "G":783.99,
-  "G#":830.61,
-  "A":880,  
-  "A#":932.33,
-  "B":987.77,
-  "finish":1000
+  {"note":"C", "frequency":523.25},
+  {"note":"C#", "frequency":554.37},
+  {"note":"D","frequency":587.33},
+  {"note":"D#","frequency":622.26},
+  {"note":"E","frequency":659.26},
+  {"note":"F","frequency":698.46},
+  {"note":"F#","frequency":739.99},
+  {"note":"G","frequency":783.99},
+  {"note":"G#","frequency":830.61},
+  {"note":"A","frequency":880},  
+  {"note":"A#","frequency":932.33},
+  {"note":"B","frequency":987.77}
 
-
-};  
-
-var noteArray = [ 523.25, 554.37, 587.33, 622.26, 659.26, 698.46, 739.99, 783.99, 830.61, 880, 932.33, 987.77 ];
+];  
 
 var width = 960,
-    height = 500,
+    height = 600,
     τ = 2 * Math.PI; 
 
 // An arc function with all values bound except the endAngle. So, to compute an
@@ -33,21 +28,22 @@ var width = 960,
 var arc = d3.svg.arc()
     .innerRadius(190) 
     .outerRadius(240)
-    .startAngle(0);
+    .startAngle(360);
 
 // Create the SVG container, and apply a transform such that the origin is the
 // center of the canvas. This way, we don't need to position arcs individually.
 var svg = d3.select("body").append("svg")
+    .attr('class', 'circle')
     .attr("width", width)
     .attr("height", height)
     .append("g")
     .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
 
-var gvs = d3.select("body").append("svg")
-    .attr("width", width)
-    .attr("height", height)
-    .append("g")
-    .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+// var gvs = d3.select("body").append("svg")
+//     .attr("width", width)
+//     .attr("height", height)
+//     .append("g")
+//     .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
 
 var background = svg.append("path")
     .datum({endAngle: 100})
@@ -57,7 +53,7 @@ var background = svg.append("path")
 // Add the foreground arc in orange, currently showing 12.7%.
 var foreground = svg.append("path")
     .datum({endAngle: .1 * τ})
-    .style("fill", "orange")
+    .style("fill", "#DEB2A0")
     .attr("d", arc);
 
 var gaugeGroup = svg.append("g")
@@ -71,20 +67,45 @@ var groupGauge = gaugeGroup.append("g")
     .attr("transform", "translate( 0 , 0 )");
 
 var frequencyScale = d3.scale.linear()
-    .domain([ noteData.C,noteData.B ])
-    .range([0,321]);
+    .domain([ noteData[0].frequency,noteData[noteData.length-1].frequency ])
+    .range([0,320]);
 
-  svg.selectAll('noteTick')
-    .data(noteArray).enter()
-      .append('line')
-      .attr('class', 'noteTick')
-      .attr('x1',0)
-      .attr('x2',0)
-      .attr('y1',190)
-      .attr('y2', 240)
-      .attr('transform',function(d){
-        return 'rotate(' + frequencyScale(d) + ')';
-      });
+var clockRadius = 200;
+var hourLabelRadius = clockRadius - 40;
+var hourLabelYOffset = 7;
+var radians = 0.0174532925 * Math.PI;
+
+svg.selectAll('noteLetters')
+  .data(noteData).enter()
+    .append('text')
+    .attr('class', 'noteLetters')
+    .attr('x1',0)
+    .attr('x2',0)
+    .attr('y1',190)
+    .attr('y2', 240)
+    .attr('x',function(d){
+      return hourLabelRadius*Math.sin( frequencyScale( d.frequency ) * 0.0175  )*1.7 - 10;
+    })
+    .attr('y',function(d){
+      return -hourLabelRadius*Math.cos( frequencyScale ( d.frequency ) * 0.0175 )*1.7 + 1;
+    })
+    .text(function(d){
+      return d.note;
+    });
+
+
+svg.selectAll('noteTick')
+  .data(noteData).enter()
+    .append('line')
+    .attr('class', 'noteTick')
+    .attr('x1',0)
+    .attr('x2',0)
+    .attr('y1',190)
+    .attr('y2', 240)
+    .attr('transform',function(d){
+      return 'rotate(' + (frequencyScale(d.frequency) +180 ) + ')';
+    });
+
 
 var hour = gaugeGroup.append("path")
     .attr("class", "tri")
@@ -99,6 +120,7 @@ var minute = groupGauge.append("path")
 // Add the background arc, from 0 to 100% (τ).
 
 function setValues(frequency, note, detune){
+  console.log(frequencyScale(frequency));
   foreground.transition()
     .duration(190)
     .call(arcTween, note );
@@ -106,7 +128,7 @@ function setValues(frequency, note, detune){
   gaugeGroup
     .transition()
     .duration(200)
-    .attr("transform", "rotate(" + ( frequency ) + ",0,0)");
+    .attr("transform", "rotate(" + ( frequencyScale(frequency) ) + ",0,0)");
   
   groupGauge
     .transition()
@@ -384,6 +406,17 @@ function updatePitch( time ) {
   var ac = autoCorrelate( buf, audioContext.sampleRate );
 
   if (ac == -1) {
+    // 
+    // 
+    // 
+    // 
+    // 
+    // can prompt user to be louder here
+    // 
+    // 
+    // 
+    // 
+    // 
     detectorElem.className = "vague";
     pitchElem.innerText = "--";
     noteElem.innerText = "-";
@@ -401,8 +434,34 @@ function updatePitch( time ) {
       detuneAmount.innerHTML = "--";
     } else {
       if (detune < 0)
+        // 
+        // 
+        // 
+        // 
+        // 
+        // 
+        // prompt user to get more in tune because is flat here
+        // 
+        // 
+        // 
+        // 
+        // 
+        // 
         detuneElem.className = "flat";
       else
+        // 
+        // 
+        // 
+        // 
+        // 
+        // 
+        // prompt user to get more in tune because is sharp here
+        // 
+        // 
+        // 
+        // 
+        // 
+        // 
         detuneElem.className = "sharp";
       detuneAmount.innerHTML = Math.abs( detune );
     }
