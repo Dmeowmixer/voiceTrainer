@@ -4,17 +4,19 @@
       <meta charset="UTF-8">
 
 
-      <title>Pitch Detector</title>
+      <title>Voice Trainer 2.0</title>
       <link rel="stylesheet" type="text/css" href="styles/styles.css"/>
 
     </head>
     <body background="/styles/images/wood_pattern.png">
-      <h1 class="title">          Voice Trainer   </h1>
+      <h1 class="title">  Voice Trainer 2.0  </h1>
       <p class="intro"> Want to sing like Utada Hikaru? I got you!</p>
       <p class="guide">Click the button to start microphone input.</p>
- 
+      <div class="help">
+        
+      </div> 
 
-      <button class="liveBut" onclick="toggleLiveInput()">use live input</button>
+      <button class="liveBut" onclick="toggleLiveInput()">Click to start Microphone</button>
         <!-- <button onclick="toggleOscillator()">use oscillator</button> -->
 
       <div id="detector" class="vague">
@@ -28,7 +30,7 @@
     <div id="gauge" class="200x160px"></div>
     <script src="bower_components/d3/d3.min.js"></script>
     <script src="app/app.js"></script>
-    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>      
 
   </body>
 </html>

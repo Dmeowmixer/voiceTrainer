@@ -39,12 +39,6 @@ var svg = d3.select("body").append("svg")
     .append("g")
     .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
 
-// var gvs = d3.select("body").append("svg")
-//     .attr("width", width)
-//     .attr("height", height)
-//     .append("g")
-//     .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
-
 var background = svg.append("path")
     .datum({endAngle: 100})
     .style("fill", "#ddd")
@@ -53,7 +47,7 @@ var background = svg.append("path")
 // Add the foreground arc in orange, currently showing 12.7%.
 var foreground = svg.append("path")
     .datum({endAngle: .1 * τ})
-    .style("fill", "#DEB2A0")
+    .style("fill", "white")
     .attr("d", arc);
 
 var gaugeGroup = svg.append("g")
@@ -406,17 +400,10 @@ function updatePitch( time ) {
   var ac = autoCorrelate( buf, audioContext.sampleRate );
 
   if (ac == -1) {
-    // 
-    // 
-    // 
-    // 
-    // 
+
     // can prompt user to be louder here
-    // 
-    // 
-    // 
-    // 
-    // 
+    $('.help').html('<p>').html('ENUNCIATE, NO ONE CAN HEAR YOU!');
+
     detectorElem.className = "vague";
     pitchElem.innerText = "--";
     noteElem.innerText = "-";
@@ -429,41 +416,24 @@ function updatePitch( time ) {
     var note =  noteFromPitch( pitch );
     noteElem.innerHTML = noteStrings[note%12];
     var detune = centsOffFromPitch( pitch, note );
-    if (detune == 0 ) {
+    if (detune == 0 || detune == 1 || detune == 2 || detune == 3 || detune == 4) {
       detuneElem.className = "";
       detuneAmount.innerHTML = "--";
+      $('.help').html('<p>').html("Oh my! You're PERFECT! YOU ANGEL! NOW HOLD IT"); 
+
     } else {
-      if (detune < 0)
-        // 
-        // 
-        // 
-        // 
-        // 
-        // 
-        // prompt user to get more in tune because is flat here
-        // 
-        // 
-        // 
-        // 
-        // 
-        // 
+      if (detune <= 5){
         detuneElem.className = "flat";
-      else
-        // 
-        // 
-        // 
-        // 
-        // 
-        // 
-        // prompt user to get more in tune because is sharp here
-        // 
-        // 
-        // 
-        // 
-        // 
-        // 
+        $('.help').html('<p>').html('YOU FLAT! TIGHTEN THOSE ABS, PUSH WITH YOUR DIAPHRAGM'); 
+
+      }
+      else{
         detuneElem.className = "sharp";
-      detuneAmount.innerHTML = Math.abs( detune );
+        detuneAmount.innerHTML = Math.abs( detune );
+
+        $('.help').html('<p>').html('YOU SHARP! Relax a bit'); 
+
+      }
     }
     // console.log(note,detune);
     setValues(pitch, note%12,detune);
