@@ -116,3 +116,16 @@ div.help{
   margin-left:30em;
   margin-top:6em;
 }
+
+@media screen and (max-width: 1024px) {
+  #detector {
+    visibility: hidden;
+  }
+  .circle {
+    float:left;
+  }
+  .guide {
+    float:right;
+  }
+  
+}
