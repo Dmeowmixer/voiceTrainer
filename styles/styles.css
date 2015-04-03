@@ -122,10 +122,15 @@ div.help{
     visibility: hidden;
   }
   .circle {
-    float:left;
+    margin-left:-10em;
   }
-  .guide {
-    float:right;
+  div.help {
+    float:none;
+    margin-left:14.5em;
+    margin-top:3em;
   }
-  
+  .liveBut{
+    margin-left:14em;
+  }
+
 }
