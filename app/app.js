@@ -208,7 +208,7 @@ function error() {
 // this gets user media i.e mic input
 function getUserMedia(dictionary, callback) {
       // this might work for gaining mobile access to mic
-      // { 'OfferToReceiveAudio': true, { 'OfferToReceiveVideo' : false }}
+      { 'OfferToReceiveAudio': true, { 'OfferToReceiveVideo' : false }}
     try {
         navigator.getUserMedia = 
           navigator.getUserMedia ||
